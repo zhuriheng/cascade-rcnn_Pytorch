@@ -281,7 +281,7 @@ def detnet59(pretrained=False):
     """
     model = DetNet(Bottleneck, [3, 4, 6, 3, 3])
     if pretrained:
-        path = 'data/pretrained/detnet59.pth'
+        path = 'pretrained/detnet59.pth'
         state_dict = torch.load(path)
         model.load_state_dict(state_dict)
 
@@ -290,7 +290,7 @@ def detnet59(pretrained=False):
 
 class detnet(_FPN):
     def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False):
-        self.model_path = 'data/pretrained_model/detnet59.pth'
+        self.model_path = 'pretrained/detnet59.pth'
         self.pretrained = pretrained
         self.class_agnostic = class_agnostic
         self.dout_base_model = 256

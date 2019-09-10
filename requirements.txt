@@ -1,6 +1,6 @@
 cython
 cffi
-opencv-python
+opencv-python==3.4.1.15
 scipy
 easydict
 matplotlib

@@ -14,6 +14,8 @@ import argparse
 import pprint
 import pdb
 import time
+import shutil
+import os
 
 import torch
 from torch.autograd import Variable
@@ -41,7 +43,7 @@ def parse_args():
     Parse input arguments
     """
     parser = argparse.ArgumentParser(description='Train a Fast R-CNN network')
-    parser.add_argument('exp_name', type=str, default=None, help='experiment name')
+    parser.add_argument('--exp_name', type=str, default=None, help='experiment name')
     parser.add_argument('--dataset', dest='dataset',
                         help='training dataset',
                         default='pascal_voc', type=str)
@@ -169,7 +171,7 @@ if __name__ == '__main__':
         # from model.utils.logger import Logger
         # # Set the logger
         # logger = Logger('./logs')
-        writer = SummaryWriter(comment=args.exp_name)
+        writer = SummaryWriter(comment="{}_{}".format(args.dataset, args.net))
 
 
     if args.dataset == "pascal_voc":
@@ -200,7 +202,7 @@ if __name__ == '__main__':
         args.set_cfgs = ['FPN_ANCHOR_SCALES', '[32, 64, 128, 256, 512]', 'FPN_FEAT_STRIDES', '[4, 8, 16, 32, 64]',
                          'MAX_NUM_GT_BOXES', '50']
 
-    args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.lscale else "cfgs/{}.yml".format(args.net)
+    args.cfg_file = "cfgs/{}/{}_ls.yml".format(args.dataset, args.net) if args.lscale else "cfgs/{}/{}.yml".format(args.dataset, args.net)
 
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
@@ -231,10 +233,17 @@ if __name__ == '__main__':
 
     if args.exp_name is not None:
         output_dir = args.save_dir + "/" + args.net + "/" + args.dataset + '/' + args.exp_name
+        date = time.strftime('%Y-%m-%d-%H-%M', time.localtime())
+        output_dir = os.path.join(output_dir, date)
     else:
         output_dir = args.save_dir + "/" + args.net + "/" + args.dataset
+        date = time.strftime('%Y-%m-%d-%H-%M', time.localtime())
+        output_dir = os.path.join(output_dir, date)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
+    shutil.copyfile('{}'.format(args.cfg_file), '{}/{}'.format(output_dir, os.path.split(args.cfg_file)[-1]))
+    shutil.copyfile('cfgs/{}/train.sh'.format(args.dataset), '{}/{}'.format(output_dir, "train.sh"))
 
     sampler_batch = sampler(train_size, args.batch_size)
 
