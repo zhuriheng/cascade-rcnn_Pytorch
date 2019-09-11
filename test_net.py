@@ -43,7 +43,7 @@ def parse_args():
     Parse input arguments
     """
     parser = argparse.ArgumentParser(description='Train a Fast R-CNN network')
-    parser.add_argument('exp_name', type=str, default=None, help='experiment name')
+    parser.add_argument('--exp_name', type=str, default=None, help='experiment name')
     parser.add_argument('--dataset', dest='dataset',
                         help='training dataset',
                         default='pascal_voc', type=str)
@@ -57,7 +57,13 @@ def parse_args():
                         help='set config keys', default=None,
                         nargs=argparse.REMAINDER)
     parser.add_argument('--load_dir', dest='load_dir',
-                        help='directory to load models', default="/srv/share/jyang375/models",
+                        help='directory to load models', default="./ckpts",
+                        type=str)
+    parser.add_argument('--log_time', dest='log_time',
+                        help='log directory to load models', default=None,
+                        type=str)
+    parser.add_argument('--load_name', dest='load_name',
+                        help='the model to eval', default="",
                         type=str)
     parser.add_argument('--cuda', dest='cuda',
                         help='whether use CUDA',
@@ -131,8 +137,7 @@ if __name__ == '__main__':
         args.imdbval_name = "vg_150-50-50_minival"
         args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
 
-    args.cfg_file = "cfgs/{}.yml".format(args.net)
-
+    args.cfg_file = "cfgs/{}/{}_ls.yml".format(args.dataset, args.net) if args.large_scale else "cfgs/{}/{}.yml".format(args.dataset, args.net)
 
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
@@ -150,12 +155,15 @@ if __name__ == '__main__':
     print('{:d} roidb entries'.format(len(roidb)))
 
     if args.exp_name is not None:
-        input_dir = args.load_dir + "/" + args.net + "/" + args.dataset + '/' + args.exp_name
+        input_dir = args.load_dir + "/" + args.net + "/" + args.dataset + '/' + args.exp_name + "/" + args.log_time
     else:
-        input_dir = args.load_dir + "/" + args.net + "/" + args.dataset
+        input_dir = args.load_dir + "/" + args.net + "/" + args.dataset + "/" + args.log_time
     if not os.path.exists(input_dir):
         raise Exception('There is no input directory for loading network from ' + input_dir)
-    load_name = os.path.join(input_dir,
+    if args.load_name:
+        load_name = args.load_name
+    else:
+        load_name = os.path.join(input_dir,
                              'fpn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
     # initilize the network here.
